@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ETH Sign Data · Input Prototype v1.3</title>
+<style>
+/* ── Reset & Base ─────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+  background: #EEF2F7;
+  min-height: 100vh;
+  color: #111827;
+}
+button { cursor: pointer; font-family: inherit; }
+textarea { font-family: inherit; resize: none; }
+textarea:focus, button:focus { outline: none; }
+
+/* ── Animations ───────────────────────────────────────────── */
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes badgePop {
+  0%   { transform: scale(1); box-shadow: 0 0 0 0 rgba(37,99,235,0); }
+  40%  { transform: scale(1.22); box-shadow: 0 0 0 6px rgba(37,99,235,0.18); }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(37,99,235,0); }
+}
+@keyframes toastUp {
+  from { opacity: 0; transform: translateX(-50%) translateY(12px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+@keyframes hintIn {
+  from { opacity: 0; max-height: 0; }
+  to   { opacity: 1; max-height: 60px; }
+}
+.anim-in    { animation: fadeSlideIn 0.18s ease both; }
+.badge-pop  { animation: badgePop 0.45s ease both; }
+.toast-anim { animation: toastUp 0.22s ease both; }
+.hint-in    { animation: hintIn 0.25s ease both; overflow: hidden; }
+
+/* ── Page Layout ──────────────────────────────────────────── */
+.page-header {
+  text-align: center;
+  padding: 44px 20px 32px;
+}
+.page-tag {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: #fff; border: 1px solid #E2E8F0;
+  border-radius: 99px; padding: 6px 18px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.06);
+  font-size: 12px; font-weight: 600; color: #374151;
+  margin-bottom: 18px;
+}
+.page-tag .dot {
+  width: 8px; height: 8px; border-radius: 50%; background: #22C55E;
+}
+.page-header h1 {
+  font-size: 26px; font-weight: 800; color: #0F172A;
+  letter-spacing: -0.03em; margin-bottom: 10px;
+}
+.page-header p {
+  font-size: 14px; color: #64748B; line-height: 1.7;
+  max-width: 520px; margin: 0 auto;
+}
+.page-header code {
+  background: #EFF6FF; color: #1D4ED8;
+  border-radius: 5px; padding: 1px 7px;
+  font-size: 13px; font-weight: 700; font-family: "SF Mono", "Fira Code", monospace;
+}
+
+.phones-wrap {
+  display: flex; align-items: flex-start;
+  justify-content: center; gap: 48px;
+  padding: 8px 32px 48px; flex-wrap: wrap;
+}
+
+/* ── Phone Shell ──────────────────────────────────────────── */
+.phone-wrap { display: flex; flex-direction: column; align-items: center; }
+.phone-shell {
+  width: 368px; height: 740px;
+  background: #fff;
+  border-radius: 48px;
+  overflow: hidden;
+  box-shadow: 0 32px 80px rgba(0,0,0,.18), 0 0 0 1px rgba(0,0,0,.06);
+  border: 9px solid #111827;
+  display: flex; flex-direction: column;
+  position: relative;
+}
+.phone-notch {
+  position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+  width: 120px; height: 32px;
+  background: #111827;
+  border-radius: 0 0 20px 20px;
+  z-index: 10;
+}
+.phone-content {
+  flex: 1; display: flex; flex-direction: column;
+  overflow: hidden;
+}
+.phone-label {
+  margin-top: 14px; text-align: center;
+  font-size: 12px; font-weight: 700; color: #374151; letter-spacing: .02em;
+}
+.phone-badge {
+  display: inline-block; margin-top: 5px;
+  font-size: 10px; font-weight: 600;
+  padding: 3px 10px; border-radius: 99px;
+}
+.phone-badge.gray { background: #F3F4F6; color: #6B7280; border: 1px solid #E5E7EB; }
+.phone-badge.blue { background: #DBEAFE; color: #1D4ED8; border: 1px solid #BFDBFE; }
+
+/* ── Status Bar ───────────────────────────────────────────── */
+.status-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 24px 6px; background: #fff; flex-shrink: 0;
+}
+.status-time { font-size: 13px; font-weight: 700; color: #111827; letter-spacing: -0.01em; }
+.status-icons { display: flex; align-items: center; gap: 6px; }
+
+/* ── Nav Bar ──────────────────────────────────────────────── */
+.nav-bar {
+  display: flex; align-items: center;
+  padding: 4px 16px 12px; background: #fff;
+  border-bottom: 1px solid #F3F4F6; flex-shrink: 0;
+}
+.nav-back {
+  width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+  background: none; border: none; border-radius: 8px; color: #6B7280;
+}
+.nav-title {
+  flex: 1; text-align: center; font-size: 16px; font-weight: 600; color: #111827;
+  letter-spacing: -0.01em;
+}
+.nav-save {
+  font-size: 15px; font-weight: 600;
+  background: none; border: none; padding: 4px 0;
+  border-radius: 6px; min-width: 40px; text-align: right;
+  transition: color 0.15s;
+}
+.nav-save.active   { color: #2563EB; }
+.nav-save.saved    { color: #16A34A; }
+.nav-save.disabled { color: #D1D5DB; cursor: not-allowed; }
+
+/* ── Screen Body ──────────────────────────────────────────── */
+.screen-body {
+  flex: 1; overflow-y: auto; padding: 20px 16px 24px;
+  position: relative;
+}
+
+/* ── Label Row ────────────────────────────────────────────── */
+.label-row {
+  display: flex; align-items: center; gap: 6px; margin-bottom: 10px;
+}
+.field-label { font-size: 13px; font-weight: 500; color: #374151; }
+.badge-only-hex {
+  font-size: 10px; background: #FEE2E2; color: #B91C1C;
+  padding: 1px 6px; border-radius: 4px; font-weight: 600;
+}
+
+/* ── Help Icon ────────────────────────────────────────────── */
+.help-btn {
+  width: 16px; height: 16px; border-radius: 50%;
+  border: 1.5px solid #D1D5DB; background: none;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 10px; color: #9CA3AF; font-weight: 700;
+  position: relative;
+}
+.help-tooltip {
+  display: none; position: absolute;
+  bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%);
+  background: #1E293B; color: #F1F5F9;
+  border-radius: 10px; padding: 9px 13px;
+  font-size: 11px; line-height: 1.65; font-weight: 400;
+  white-space: normal; width: 230px; z-index: 200;
+  box-shadow: 0 8px 24px rgba(0,0,0,.25);
+  pointer-events: none;
+}
+.help-tooltip::after {
+  content: "";
+  position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
+  border: 5px solid transparent; border-top-color: #1E293B;
+}
+.help-btn:hover .help-tooltip,
+.help-btn:focus .help-tooltip { display: block; }
+.help-tooltip code {
+  background: rgba(255,255,255,0.15); border-radius: 3px;
+  padding: 0 3px; font-size: 10px;
+}
+
+/* ── Textarea wrapper ─────────────────────────────────────── */
+.textarea-wrap { position: relative; }
+.data-textarea {
+  width: 100%; border-radius: 12px;
+  padding: 10px 14px; font-size: 13px; color: #111827;
+  line-height: 1.65; transition: border-color 0.2s, background 0.2s;
+  display: block;
+}
+.data-textarea.plain {
+  border: 1.5px solid #E5E7EB; background: #fff; padding-right: 90px;
+}
+.data-textarea.hex-ok {
+  border: 1.5px solid #93C5FD; background: #F0F7FF; padding-right: 60px;
+  font-family: "SF Mono", "Fira Code", monospace;
+}
+.data-textarea.hex-err {
+  border: 1.5px solid #EF4444; background: #FEF2F2; padding-right: 60px;
+  font-family: "SF Mono", "Fira Code", monospace;
+}
+
+/* ── Format Badge ─────────────────────────────────────────── */
+.format-badge {
+  position: absolute; top: 8px; right: 8px;
+  font-size: 10px; font-weight: 700; letter-spacing: .04em;
+  padding: 3px 9px; border-radius: 99px;
+  user-select: none; pointer-events: none;
+  transition: background 0.25s, color 0.25s, border-color 0.25s;
+}
+.format-badge.plain { background: #F3F4F6; color: #9CA3AF; border: 1px solid #E5E7EB; }
+.format-badge.hex   { background: #DBEAFE; color: #1D4ED8; border: 1px solid #BFDBFE; }
+
+/* ── Footer Row ───────────────────────────────────────────── */
+.footer-row {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  margin-top: 5px; gap: 8px; min-height: 18px;
+}
+.footer-hint { font-size: 11px; }
+.footer-hint.normal  { color: #C4C9D4; }
+.footer-hint.plain   { color: #9CA3AF; }
+.footer-hint.valid   { color: #16A34A; font-weight: 500; }
+.footer-hint.error   { color: #EF4444; font-weight: 500; }
+.byte-count { font-size: 11px; flex-shrink: 0; transition: color .2s; }
+.byte-count.normal { color: #9CA3AF; }
+.byte-count.warn   { color: #F59E0B; font-weight: 600; }
+
+/* ── Alert Boxes ──────────────────────────────────────────── */
+.alert-box {
+  margin-top: 8px; border-radius: 10px;
+  padding: 9px 12px; display: flex; gap: 8px; align-items: flex-start;
+}
+.alert-box.hex-hint {
+  background: #EFF6FF; border: 1px solid #BFDBFE;
+}
+.alert-box.ambiguous {
+  background: #F9FAFB; border: 1px solid #E5E7EB;
+}
+.alert-box.gas {
+  background: #FFFBEB; border: 1px solid #FDE68A;
+}
+.alert-box.pain {
+  background: #FFF7F7; border: 1px solid #FECACA;
+}
+.alert-icon { font-size: 14px; flex-shrink: 0; }
+.alert-text { font-size: 11px; line-height: 1.55; }
+.alert-text.blue   { color: #1D4ED8; font-weight: 500; }
+.alert-text.gray   { color: #6B7280; }
+.alert-text.orange { color: #92400E; }
+.alert-text.red    { color: #7F1D1D; }
+.alert-text code {
+  background: rgba(0,0,0,0.06); border-radius: 3px;
+  padding: 0 3px; font-size: 10px; font-family: "SF Mono", monospace;
+}
+
+/* ── Send Mode Bar（格式说明提示条）────────────────────────── */
+.send-mode-bar {
+  margin-top: 8px; border-radius: 10px;
+  padding: 9px 12px 9px 11px;
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  transition: background 0.2s, border-color 0.2s;
+}
+.send-mode-bar.hex-state  { background: #EFF6FF; border: 1px solid #BFDBFE; }
+.send-mode-bar.plain-state { background: #F0FDF4; border: 1px solid #BBF7D0; }
+.send-mode-left { display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0; }
+.send-mode-icon { font-size: 13px; flex-shrink: 0; }
+.send-mode-desc { font-size: 11px; font-weight: 500; line-height: 1.45; }
+.hex-state  .send-mode-desc { color: #1D4ED8; }
+.plain-state .send-mode-desc { color: #15803D; }
+.send-mode-btn {
+  font-size: 10.5px; font-weight: 600;
+  padding: 4px 9px; border-radius: 7px;
+  white-space: nowrap; flex-shrink: 0;
+  transition: all 0.12s; cursor: pointer;
+}
+.hex-state  .send-mode-btn { color: #2563EB; border: 1px solid #BFDBFE; background: #fff; }
+.plain-state .send-mode-btn { color: #15803D; border: 1px solid #86EFAC; background: #fff; }
+.hex-state  .send-mode-btn:hover { background: #DBEAFE; }
+.plain-state .send-mode-btn:hover { background: #DCFCE7; }
+
+/* ── Divider ──────────────────────────────────────────────── */
+.divider { height: 1px; background: #F3F4F6; margin: 18px 0 14px; }
+
+/* ── Preset Buttons ───────────────────────────────────────── */
+.presets-label {
+  font-size: 10px; font-weight: 700; color: #9CA3AF;
+  margin-bottom: 8px; text-transform: uppercase; letter-spacing: .06em;
+}
+.presets-wrap { display: flex; flex-wrap: wrap; gap: 6px; }
+.preset-btn {
+  font-size: 11px; padding: 5px 11px; border-radius: 8px;
+  border: 1px solid #E5E7EB; background: #fff; color: #6B7280;
+  transition: all 0.12s; font-weight: 400;
+}
+.preset-btn.active-plain {
+  border-color: #D1D5DB; background: #F9FAFB; color: #374151; font-weight: 600;
+}
+.preset-btn.active-hex {
+  border-color: #93C5FD; background: #EFF6FF; color: #1D4ED8; font-weight: 600;
+}
+
+/* ── Toast ────────────────────────────────────────────────── */
+.toast {
+  position: absolute; bottom: 88px; left: 50%; transform: translateX(-50%);
+  background: rgba(15,23,42,0.9);
+  color: #fff; font-size: 12px; font-weight: 500;
+  border-radius: 20px; padding: 8px 18px; white-space: nowrap;
+  z-index: 300; box-shadow: 0 8px 24px rgba(0,0,0,.25);
+}
+
+/* ── Legend ───────────────────────────────────────────────── */
+.legend {
+  max-width: 860px; margin: 0 auto 60px; padding: 0 24px;
+}
+.legend-card {
+  background: #fff; border: 1px solid #E2E8F0; border-radius: 20px;
+  padding: 24px 28px; box-shadow: 0 4px 16px rgba(0,0,0,.05);
+}
+.legend-title {
+  font-size: 11px; font-weight: 800; color: #94A3B8;
+  margin-bottom: 18px; text-transform: uppercase; letter-spacing: .08em;
+}
+.legend-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 14px;
+}
+.legend-item {
+  border-radius: 12px; padding: 14px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.legend-item-icon {
+  width: 32px; height: 32px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; flex-shrink: 0;
+}
+.legend-item h4 { font-size: 12px; font-weight: 700; color: #111827; }
+.legend-item p  { font-size: 11.5px; color: #6B7280; line-height: 1.6; }
+
+.rule-callout {
+  margin-top: 16px;
+  background: linear-gradient(135deg, #EFF6FF 0%, #F0F7FF 100%);
+  border: 1px solid #BFDBFE; border-radius: 14px; padding: 16px 20px;
+  display: flex; gap: 14px; align-items: flex-start;
+}
+.rule-callout-icon {
+  width: 36px; height: 36px; border-radius: 10px; background: #DBEAFE;
+  display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;
+}
+.rule-callout h4  { font-size: 13px; font-weight: 700; color: #1D4ED8; margin-bottom: 4px; }
+.rule-callout p   { font-size: 12px; color: #3B82F6; line-height: 1.7; }
+.rule-callout code {
+  background: rgba(255,255,255,0.5); border-radius: 4px;
+  padding: 0 4px; font-size: 11px; font-family: "SF Mono", monospace;
+}
+</style>
+</head>
+<body>
+
+<!-- ── Page Header ─────────────────────────────────────────── -->
+<div class="page-header">
+  <div class="page-tag">
+    <span class="dot"></span>
+    交互原型 · PRD v1.3 · 2026-03-20
+  </div>
+  <h1>ETH Data 字段 · 输入体验优化</h1>
+  <p>
+    核心变更：去除手动 Toggle，改为<strong style="color:#1D4ED8">自动格式识别</strong>。<br/>
+    以 <code>0x</code> 开头 → HEX 校验模式 · 其余 → 明文自动编码
+  </p>
+</div>
+
+<!-- ── Phone Frames ────────────────────────────────────────── -->
+<div class="phones-wrap">
+
+  <!-- Phone: Before -->
+  <div class="phone-wrap">
+    <div class="phone-shell">
+      <div class="phone-notch"></div>
+      <div class="phone-content">
+        <!-- Status Bar -->
+        <div class="status-bar">
+          <span class="status-time">9:41</span>
+          <div class="status-icons">
+            <svg width="17" height="12" viewBox="0 0 17 12" fill="none">
+              <rect x="0" y="5" width="3" height="7" rx="1" fill="#111827"/>
+              <rect x="4.5" y="3" width="3" height="9" rx="1" fill="#111827"/>
+              <rect x="9" y="1" width="3" height="11" rx="1" fill="#111827"/>
+              <rect x="13.5" y="0" width="3" height="12" rx="1" fill="#111827" fill-opacity=".25"/>
+            </svg>
+            <svg width="16" height="12" viewBox="0 0 16 12" fill="none">
+              <path d="M8 10a1 1 0 100 2 1 1 0 000-2z" fill="#111827"/>
+              <path d="M5.2 7.6a4 4 0 015.6 0" stroke="#111827" stroke-width="1.5" stroke-linecap="round"/>
+              <path d="M2.5 5a7.5 7.5 0 0111 0" stroke="#111827" stroke-width="1.5" stroke-linecap="round"/>
+              <path d="M0 2.4a11 11 0 0116 0" stroke="#111827" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <svg width="25" height="12" viewBox="0 0 25 12" fill="none">
+              <rect x=".5" y=".5" width="21" height="11" rx="3.5" stroke="#111827" stroke-opacity=".35"/>
+              <rect x="1" y="1" width="18" height="10" rx="3" fill="#111827"/>
+              <path d="M23 4v4a2 2 0 000-4z" fill="#111827" fill-opacity=".4"/>
+            </svg>
+          </div>
+        </div>
+        <!-- Nav -->
+        <div class="nav-bar">
+          <button class="nav-back">
+            <svg width="9" height="15" viewBox="0 0 9 15" fill="none">
+              <path d="M8 1L1.5 7.5L8 14" stroke="#6B7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+          <span class="nav-title">Advanced</span>
+          <button class="nav-save active" id="save-before">Save</button>
+        </div>
+        <!-- Body -->
+        <div class="screen-body">
+          <div class="label-row">
+            <span class="field-label">Data</span>
+            <span class="badge-only-hex">HEX ONLY</span>
+          </div>
+          <div class="textarea-wrap">
+            <textarea class="data-textarea plain" id="before-input" rows="5"
+              placeholder="Hexadecimal Character"></textarea>
+          </div>
+          <!-- Pain point callouts -->
+          <div style="margin-top:16px; display:flex; flex-direction:column; gap:10px;">
+            <div class="alert-box pain">
+              <span class="alert-icon">❌</span>
+              <p class="alert-text red">用户必须手动将明文转为 HEX（需借助外部工具）</p>
+            </div>
+            <div class="alert-box pain">
+              <span class="alert-icon">❌</span>
+              <p class="alert-text red">占位提示"Hexadecimal Character"对普通用户完全不友好</p>
+            </div>
+            <div class="alert-box pain">
+              <span class="alert-icon">❌</span>
+              <p class="alert-text red">填写错误格式时没有任何校验提示</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="phone-label">改版前（现状）</p>
+    <p style="text-align:center;margin-top:5px"><span class="phone-badge gray">Current · v0</span></p>
+  </div>
+
+  <!-- Phone: After -->
+  <div class="phone-wrap">
+    <div class="phone-shell">
+      <div class="phone-notch"></div>
+      <div class="phone-content">
+        <!-- Status Bar -->
+        <div class="status-bar">
+          <span class="status-time">9:41</span>
+          <div class="status-icons">
+            <svg width="17" height="12" viewBox="0 0 17 12" fill="none">
+              <rect x="0" y="5" width="3" height="7" rx="1" fill="#111827"/>
+              <rect x="4.5" y="3" width="3" height="9" rx="1" fill="#111827"/>
+              <rect x="9" y="1" width="3" height="11" rx="1" fill="#111827"/>
+              <rect x="13.5" y="0" width="3" height="12" rx="1" fill="#111827" fill-opacity=".25"/>
+            </svg>
+            <svg width="16" height="12" viewBox="0 0 16 12" fill="none">
+              <path d="M8 10a1 1 0 100 2 1 1 0 000-2z" fill="#111827"/>
+              <path d="M5.2 7.6a4 4 0 015.6 0" stroke="#111827" stroke-width="1.5" stroke-linecap="round"/>
+              <path d="M2.5 5a7.5 7.5 0 0111 0" stroke="#111827" stroke-width="1.5" stroke-linecap="round"/>
+              <path d="M0 2.4a11 11 0 0116 0" stroke="#111827" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <svg width="25" height="12" viewBox="0 0 25 12" fill="none">
+              <rect x=".5" y=".5" width="21" height="11" rx="3.5" stroke="#111827" stroke-opacity=".35"/>
+              <rect x="1" y="1" width="18" height="10" rx="3" fill="#111827"/>
+              <path d="M23 4v4a2 2 0 000-4z" fill="#111827" fill-opacity=".4"/>
+            </svg>
+          </div>
+        </div>
+        <!-- Nav -->
+        <div class="nav-bar">
+          <button class="nav-back">
+            <svg width="9" height="15" viewBox="0 0 9 15" fill="none">
+              <path d="M8 1L1.5 7.5L8 14" stroke="#6B7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+          <span class="nav-title">Advanced</span>
+          <button class="nav-save active" id="save-after">Save</button>
+        </div>
+        <!-- Body -->
+        <div class="screen-body" id="after-body">
+          <div class="label-row">
+            <span class="field-label">Data</span>
+            <!-- Help -->
+            <button class="help-btn" tabindex="0">?
+              <div class="help-tooltip">
+                <strong style="display:block;margin-bottom:3px">格式自动识别规则：</strong>
+                以 <code>0x</code> 开头 → HEX 格式（自动校验）<br/>
+                其余输入 → 明文（自动转 HEX 附加到交易）
+              </div>
+            </button>
+          </div>
+
+          <!-- Textarea + badge -->
+          <div class="textarea-wrap">
+            <textarea class="data-textarea plain" id="after-input" rows="5"
+              placeholder="输入文字或粘贴 0x... HEX 数据"
+              oninput="onAfterInput(this.value)"></textarea>
+            <span class="format-badge plain" id="format-badge">Plain Text</span>
+          </div>
+
+          <!-- Format switch hint -->
+          <div id="fmt-hint" style="display:none" class="alert-box hex-hint hint-in">
+            <span class="alert-icon">🔍</span>
+            <p class="alert-text blue">检测到 0x 前缀，已自动识别为 HEX 格式</p>
+          </div>
+
+          <!-- Error / hint + byte count -->
+          <div class="footer-row">
+            <span class="footer-hint normal" id="footer-hint">以 0x 开头 → HEX 校验 · 其余 → 明文自动编码</span>
+            <span class="byte-count normal" id="byte-count" style="display:none"></span>
+          </div>
+
+          <!-- Gas warning -->
+          <div id="gas-warn" style="display:none" class="alert-box gas anim-in">
+            <span class="alert-icon">⛽</span>
+            <p class="alert-text orange">Data 较大，将显著增加 Gas 费用</p>
+          </div>
+
+          <!-- Ambiguous input hint -->
+          <div id="ambig-hint" style="display:none" class="alert-box ambiguous anim-in">
+            <span class="alert-icon">💡</span>
+            <p class="alert-text gray">
+              内容看起来像 HEX，但将以明文处理。<br/>
+              如需作为 HEX 数据，请在开头添加 <code>0x</code> 前缀。
+            </p>
+          </div>
+
+          <!-- Send Mode Bar：格式说明提示条（HEX 校验通过时出现） -->
+          <div id="send-mode-bar" style="display:none" class="send-mode-bar hex-state anim-in">
+            <div class="send-mode-left">
+              <span class="send-mode-icon">ℹ️</span>
+              <span class="send-mode-desc" id="send-mode-desc"></span>
+            </div>
+            <button class="send-mode-btn" id="send-mode-btn"></button>
+          </div>
+
+          <!-- Divider -->
+          <div class="divider"></div>
+
+          <!-- Quick presets -->
+          <p class="presets-label">快速测试示例</p>
+          <div class="presets-wrap" id="presets-wrap"></div>
+        </div>
+
+        <!-- Toast -->
+        <div id="after-toast" class="toast toast-anim" style="display:none"></div>
+      </div>
+    </div>
+    <p class="phone-label">改版后（自动识别）</p>
+    <p style="text-align:center;margin-top:5px"><span class="phone-badge blue">New · v1.3 · 双向切换提示条</span></p>
+  </div>
+
+</div><!-- end phones-wrap -->
+
+<!-- ── Legend ──────────────────────────────────────────────── -->
+<div class="legend">
+  <div class="legend-card">
+    <p class="legend-title">v1.3 核心设计说明</p>
+    <div class="legend-grid" id="legend-grid"></div>
+  </div>
+  <div class="rule-callout">
+    <div class="rule-callout-icon">📐</div>
+    <div>
+      <h4>格式判断核心规则（单一规则，无歧义）</h4>
+      <p>
+        <strong>0x / 0X 前缀</strong>是 HEX 的唯一判定标志，不通过字符集推断。<br/>
+        这样设计的原因：<code>cafe</code>、<code>deadbeef</code> 等字符串在语义上存在歧义——用户原意可能是明文。
+        <strong>只有显式写出 0x 前缀，系统才视为 HEX 意图</strong>。
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ── JS Logic ─────────────────────────────────────────────── -->
+<script>
+/* ── Helpers ──────────────────────────────────────────────── */
+function textToHex(str) {
+  var bytes = new TextEncoder().encode(str);
+  return "0x" + Array.from(bytes).map(function(b){ return b.toString(16).padStart(2,"0"); }).join("");
+}
+function validateHex(raw) {
+  if (!raw || /^0[xX]$/.test(raw)) return { ok:true, bytes:0, empty:true, msg:"" };
+  var stripped = raw.replace(/^0[xX]/,"");
+  if (!/^[0-9a-fA-F]*$/.test(stripped))
+    return { ok:false, bytes:0, empty:false, msg:"包含无效字符，仅支持 0-9 和 a-f" };
+  if (stripped.length % 2 !== 0)
+    return { ok:false, bytes:0, empty:false, msg:"HEX 字符数应为偶数" };
+  return { ok:true, bytes: stripped.length/2, empty:false, msg:"" };
+}
+function getByteCount(text) {
+  return new TextEncoder().encode(text).length;
+}
+function isHexFormat(val) { return /^0[xX]/.test(val); }
+function isAmbiguous(val) { return !isHexFormat(val) && val.length>=4 && /^[0-9a-fA-F]+$/.test(val); }
+
+/* ── State ────────────────────────────────────────────────── */
+var prevIsHex    = false;
+var fmtHintTimer = null;
+var toastTimer   = null;
+// sendMode: 'auto' = 跟随自动识别 | 'plaintext' = 用户主动切换为明文
+var sendMode = 'auto';
+
+/* ── DOM refs ─────────────────────────────────────────────── */
+var afterInput    = document.getElementById("after-input");
+var formatBadge   = document.getElementById("format-badge");
+var fmtHint       = document.getElementById("fmt-hint");
+var footerHint    = document.getElementById("footer-hint");
+var byteCountEl   = document.getElementById("byte-count");
+var gasWarnEl     = document.getElementById("gas-warn");
+var ambigHintEl   = document.getElementById("ambig-hint");
+var sendModeBar   = document.getElementById("send-mode-bar");
+var sendModeDesc  = document.getElementById("send-mode-desc");
+var sendModeBtn   = document.getElementById("send-mode-btn");
+var saveAfterBtn  = document.getElementById("save-after");
+var afterToast    = document.getElementById("after-toast");
+
+/* ── Main update function ─────────────────────────────────── */
+function onAfterInput(val, keepSendMode) {
+  // Reset sendMode whenever user changes content (unless called from toggle btn)
+  if (!keepSendMode) sendMode = 'auto';
+
+  var autoIsHex = isHexFormat(val);
+  var hexVal    = autoIsHex ? validateHex(val) : null;
+  var hasErr    = autoIsHex && hexVal && !hexVal.ok && !hexVal.empty;
+  var hexValid  = autoIsHex && hexVal && hexVal.ok && !hexVal.empty; // HEX OK + non-empty
+
+  // Effective mode (what we actually use for encoding)
+  var effectivePlain = (!autoIsHex) || (autoIsHex && sendMode === 'plaintext');
+
+  // Byte counts
+  var hexBytes   = hexValid ? hexVal.bytes : 0;
+  var plainBytes = val ? getByteCount(val) : 0;
+  var bytes      = !val ? 0
+    : effectivePlain ? plainBytes
+    : (hexValid ? hexBytes : 0);
+  var gasWarn = bytes > 1024;
+
+  /* -- Format badge (animate on auto-detection change only) -- */
+  if (autoIsHex !== prevIsHex) {
+    var newBadge = formatBadge.cloneNode(true);
+    formatBadge.parentNode.replaceChild(newBadge, formatBadge);
+    formatBadge = newBadge;
+    formatBadge.classList.add("badge-pop");
+    if (autoIsHex) {
+      fmtHint.style.display = "flex";
+      fmtHint.classList.remove("hint-in");
+      void fmtHint.offsetWidth;
+      fmtHint.classList.add("hint-in");
+      clearTimeout(fmtHintTimer);
+      fmtHintTimer = setTimeout(function(){ fmtHint.style.display = "none"; }, 2000);
+    } else {
+      fmtHint.style.display = "none";
+    }
+    prevIsHex = autoIsHex;
+  }
+
+  /* -- Badge (reflects effective mode) -- */
+  var showPlainBadge = effectivePlain || !autoIsHex;
+  formatBadge.textContent = showPlainBadge ? "Plain Text" : "HEX";
+  formatBadge.className   = "format-badge " + (showPlainBadge ? "plain" : "hex");
+
+  /* -- Textarea style -- */
+  afterInput.className = "data-textarea "
+    + (!autoIsHex || sendMode === 'plaintext' ? "plain"
+       : hasErr ? "hex-err" : "hex-ok");
+
+  /* -- Footer hint -- */
+  footerHint.className = "footer-hint";
+  if (!val) {
+    footerHint.textContent = "以 0x 开头 → HEX 校验 · 其余 → 明文自动编码";
+    footerHint.classList.add("normal");
+  } else if (hasErr) {
+    footerHint.textContent = "✕ " + hexVal.msg;
+    footerHint.classList.add("error");
+  } else if (sendMode === 'plaintext') {
+    footerHint.textContent = "Override：将以 UTF-8 明文写入链上";
+    footerHint.classList.add("plain");
+  } else if (hexValid) {
+    footerHint.textContent = "✓ 格式合法";
+    footerHint.classList.add("valid");
+  } else {
+    footerHint.textContent = "将以 UTF-8 编码后附加至交易";
+    footerHint.classList.add("plain");
+  }
+
+  /* -- Byte count -- */
+  if (val && !hasErr && bytes > 0) {
+    byteCountEl.style.display = "block";
+    byteCountEl.textContent   = bytes.toLocaleString() + " bytes";
+    byteCountEl.className     = "byte-count " + (gasWarn ? "warn" : "normal");
+  } else {
+    byteCountEl.style.display = "none";
+  }
+
+  /* -- Gas warning -- */
+  gasWarnEl.style.display = (gasWarn && !hasErr) ? "flex" : "none";
+
+  /* -- Ambiguous hint -- */
+  ambigHintEl.style.display = isAmbiguous(val) ? "flex" : "none";
+
+  /* -- Send Mode Bar（格式说明提示条） -- */
+  if (hexValid) {
+    sendModeBar.style.display = "flex";
+    if (sendMode === 'plaintext') {
+      // 状态 B：Override 明文
+      sendModeBar.className = "send-mode-bar plain-state anim-in";
+      sendModeDesc.textContent = "将以 UTF-8 明文写入链上（" + plainBytes + " bytes）";
+      sendModeBtn.textContent  = "切换为 HEX 发送（" + hexBytes + " bytes）→";
+    } else {
+      // 状态 A：默认 HEX
+      sendModeBar.className = "send-mode-bar hex-state anim-in";
+      sendModeDesc.textContent = "将以 HEX 字节写入链上（" + hexBytes + " bytes）";
+      sendModeBtn.textContent  = "改为明文发送（" + plainBytes + " bytes）→";
+    }
+  } else {
+    sendModeBar.style.display = "none";
+  }
+
+  /* -- Save button -- */
+  saveAfterBtn.className = "nav-save " + (hasErr ? "disabled" : "active");
+  saveAfterBtn.disabled  = hasErr;
+
+  if (afterInput.value !== val) afterInput.value = val;
+}
+
+/* ── Send Mode Toggle ─────────────────────────────────────── */
+sendModeBtn.addEventListener("click", function(){
+  sendMode = (sendMode === 'plaintext') ? 'auto' : 'plaintext';
+  onAfterInput(afterInput.value, true /* keepSendMode */);
+});
+
+/* ── Save (After) ─────────────────────────────────────────── */
+saveAfterBtn.addEventListener("click", function(){
+  if (saveAfterBtn.disabled) return;
+  var val = afterInput.value;
+  if (!val) return;
+  var isHex = isHexFormat(val);
+  // Use sendMode to determine final encoding
+  var finalHex = (sendMode === 'plaintext') ? textToHex(val)
+    : isHex ? val : textToHex(val);
+  var modeLabel = (sendMode === 'plaintext') ? "（明文编码）" : (isHex ? "（HEX）" : "（明文编码）");
+  var preview   = finalHex.length > 22 ? finalHex.slice(0,22)+"…" : finalHex;
+  showToast("已提交" + modeLabel + "：" + preview);
+  saveAfterBtn.textContent = "✓ Saved";
+  saveAfterBtn.className   = "nav-save saved";
+  setTimeout(function(){
+    saveAfterBtn.textContent = "Save";
+    saveAfterBtn.className   = "nav-save active";
+  }, 2000);
+});
+
+/* ── Save (Before) ────────────────────────────────────────── */
+document.getElementById("save-before").addEventListener("click", function(){
+  var btn = this;
+  btn.textContent = "✓ Saved";
+  btn.className   = "nav-save saved";
+  setTimeout(function(){ btn.textContent = "Save"; btn.className = "nav-save active"; }, 2000);
+});
+
+/* ── Toast ────────────────────────────────────────────────── */
+function showToast(msg) {
+  afterToast.textContent = msg;
+  afterToast.style.display = "block";
+  afterToast.className = "toast toast-anim";
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){ afterToast.style.display = "none"; }, 2500);
+}
+
+/* ── Presets ──────────────────────────────────────────────── */
+var presets = [
+  { label:"普通文字",       val:"Hello, imToken!" },
+  { label:"中文备注",       val:"链上备注：转账给 Alice" },
+  { label:"合法 HEX",       val:"0x48656c6c6f" },
+  { label:"含无效字符",     val:"0x48GG" },
+  { label:"奇数长度",       val:"0x48656" },
+  { label:"纯十六进制字符", val:"deadbeef" },
+];
+var presetsWrap = document.getElementById("presets-wrap");
+presets.forEach(function(p){
+  var btn = document.createElement("button");
+  btn.className   = "preset-btn";
+  btn.textContent = p.label;
+  btn.addEventListener("click", function(){
+    afterInput.value = p.val;
+    onAfterInput(p.val);
+    // Update active states
+    document.querySelectorAll(".preset-btn").forEach(function(b){ b.className = "preset-btn"; });
+    var wouldBeHex = isHexFormat(p.val);
+    btn.className = "preset-btn " + (wouldBeHex ? "active-hex" : "active-plain");
+  });
+  presetsWrap.appendChild(btn);
+});
+
+/* ── Legend ───────────────────────────────────────────────── */
+var legendItems = [
+  { icon:"🔍", title:"自动格式识别",    bg:"#EFF6FF", border:"#BFDBFE", iconBg:"#DBEAFE",
+    desc:"0x 前缀触发 HEX 模式，其余均为明文。无需用户做任何模式选择。" },
+  { icon:"🏷️", title:"格式标签实时反馈", bg:"#F0FDF4", border:"#BBF7D0", iconBg:"#DCFCE7",
+    desc:"输入框右上角药丸标签实时显示识别结果，格式切换时有动画弹出。" },
+  { icon:"✕",  title:"HEX 严格实时校验", bg:"#FFF7F7", border:"#FECACA", iconBg:"#FEE2E2",
+    desc:"非法字符或奇数长度立即红框提示。0x 后无字符视为空值，不触发错误。" },
+  { icon:"💡", title:"歧义输入引导",     bg:"#FAFAF9", border:"#E7E5E4", iconBg:"#F5F5F4",
+    desc:"纯十六进制字符不带 0x 时，以明文处理，并给出「添加 0x」的建议提示。" },
+  { icon:"⛽", title:"Gas 费用提示",     bg:"#FFFBEB", border:"#FDE68A", iconBg:"#FEF3C7",
+    desc:"超过 1024 字节时字节计数变橙色并展示 Gas 警告，不强制截断。" },
+  { icon:"🔄", title:"二次编码提示条",    bg:"#F0FDF4", border:"#BBF7D0", iconBg:"#DCFCE7",
+    desc:"HEX 校验通过时出现：默认「HEX 字节写入」，可切换为「UTF-8 明文」；状态可来回切换，修改内容后自动重置。" },
+  { icon:"🔗", title:"接口无变更",       bg:"#F8FAFC", border:"#E2E8F0", iconBg:"#F1F5F9",
+    desc:"无论输入格式，最终均以 0x HEX 字符串传入交易构建层，下游无需修改。" },
+];
+var legendGrid = document.getElementById("legend-grid");
+legendItems.forEach(function(item){
+  var div = document.createElement("div");
+  div.className = "legend-item";
+  div.style.background = item.bg;
+  div.style.border = "1px solid " + item.border;
+  div.innerHTML =
+    '<div class="legend-item-icon" style="background:'+item.iconBg+'">'+item.icon+'</div>'+
+    '<h4>'+item.title+'</h4>'+
+    '<p>'+item.desc+'</p>';
+  legendGrid.appendChild(div);
+});
+</script>
+</body>
+</html>
