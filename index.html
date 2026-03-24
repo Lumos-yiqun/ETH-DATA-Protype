@@ -377,12 +377,12 @@ textarea:focus, button:focus { outline: none; }
 <div class="page-header">
   <div class="page-tag">
     <span class="dot"></span>
-    交互原型 · PRD v1.3 · 2026-03-20
+    交互原型 · PRD v1.4 · 2026-03-20
   </div>
   <h1>ETH Data 字段 · 输入体验优化</h1>
   <p>
-    核心变更：去除手动 Toggle，改为<strong style="color:#1D4ED8">自动格式识别</strong>。<br/>
-    以 <code>0x</code> 开头 → HEX 校验模式 · 其余 → 明文自动编码
+    核心变更：<strong style="color:#1D4ED8">完全合规 HEX 自动识别</strong>，非标准内容一律默认明文。<br/>
+    状态提示语 + 文字切换链接替代分段控件，提供轻量双向切换入口
   </p>
 </div>
 
@@ -540,7 +540,7 @@ textarea:focus, button:focus { outline: none; }
       </div>
     </div>
     <p class="phone-label">改版后（自动识别）</p>
-    <p style="text-align:center;margin-top:5px"><span class="phone-badge blue">New · v1.3 · 双向切换提示条</span></p>
+    <p style="text-align:center;margin-top:5px"><span class="phone-badge blue">New · v1.4 · 文字切换链接</span></p>
   </div><!-- end phone-col -->
 
   <!-- Quick presets panel（右侧） -->
@@ -555,17 +555,16 @@ textarea:focus, button:focus { outline: none; }
 <!-- ── Legend ──────────────────────────────────────────────── -->
 <div class="legend">
   <div class="legend-card">
-    <p class="legend-title">v1.3 核心设计说明</p>
+    <p class="legend-title">v1.4 核心设计说明</p>
     <div class="legend-grid" id="legend-grid"></div>
   </div>
   <div class="rule-callout">
     <div class="rule-callout-icon">📐</div>
     <div>
-      <h4>格式判断核心规则（单一规则，无歧义）</h4>
+      <h4>格式判断核心规则（收紧为完全合规校验）</h4>
       <p>
-        <strong>0x / 0X 前缀</strong>是 HEX 的唯一判定标志，不通过字符集推断。<br/>
-        这样设计的原因：<code>cafe</code>、<code>deadbeef</code> 等字符串在语义上存在歧义——用户原意可能是明文。
-        <strong>只有显式写出 0x 前缀，系统才视为 HEX 意图</strong>。
+        仅当内容<strong>同时满足三个条件</strong>时，系统才自动识别为 HEX：① 以 <code>0x</code> / <code>0X</code> 开头；② 前缀后仅含合法十六进制字符（<code>0-9 a-f A-F</code>）；③ 前缀后字符数为偶数。<br/>
+        其余所有内容（含 <code>deadbeef</code>、<code>0x48GG</code>、<code>0x123</code> 等）一律默认识别为<strong>明文</strong>。若用户需要以 HEX 发送，可点击提示语旁的「切换为 HEX」链接，切换后系统实时显示格式校验结果。
       </p>
     </div>
   </div>
@@ -777,18 +776,18 @@ presets.forEach(function(p){
 
 /* ── Legend ───────────────────────────────────────────────── */
 var legendItems = [
-  { icon:"🔍", title:"自动格式识别",    bg:"#EFF6FF", border:"#BFDBFE", iconBg:"#DBEAFE",
-    desc:"完整 HEX（0x + 合法字符 + 偶数长度）→ 自动识别 HEX；其余内容一律识别为明文。" },
-  { icon:"↩️", title:"格式文字切换链接", bg:"#F0FDF4", border:"#BBF7D0", iconBg:"#DCFCE7",
-    desc:"状态提示语旁提供「切换为纯文本 / 切换为 HEX」文字链接，低频修正操作静默退出，用户手动切换后文案同步更新。" },
+  { icon:"🔍", title:"严格格式自动识别",  bg:"#EFF6FF", border:"#BFDBFE", iconBg:"#DBEAFE",
+    desc:"仅完全合规 HEX（0x 前缀 + 合法字符 + 偶数长度）自动识别为 HEX；其余内容（含不完整 HEX、无前缀十六进制字符串）一律默认明文。" },
+  { icon:"↩️", title:"文字切换链接",      bg:"#F0FDF4", border:"#BBF7D0", iconBg:"#DCFCE7",
+    desc:"疑似 HEX 的明文内容旁展示「切换为 HEX」，HEX 模式下展示「切换为纯文本」；低频修正操作以文字链形式静默呈现，修改内容后自动重置。" },
   { icon:"✕",  title:"HEX 严格实时校验", bg:"#FFF7F7", border:"#FECACA", iconBg:"#FEE2E2",
-    desc:"仅在 HEX 模式下触发校验。非法字符或奇数长度立即红框提示，Save 同步禁用。" },
-  { icon:"💡", title:"歧义输入引导",     bg:"#FAFAF9", border:"#E7E5E4", iconBg:"#F5F5F4",
-    desc:"纯十六进制字符不带 0x 时，默认识别为明文并提示「切换为 HEX」；切换后底部说明系统将自动补全 0x 前缀。" },
-  { icon:"⛽", title:"Gas 费用提示",     bg:"#FFFBEB", border:"#FDE68A", iconBg:"#FEF3C7",
-    desc:"超过 1024 字节时字节计数变橙色并展示 Gas 警告，不强制截断。" },
-  { icon:"🔗", title:"接口无变更",       bg:"#F8FAFC", border:"#E2E8F0", iconBg:"#F1F5F9",
-    desc:"无论输入格式，最终均以 0x HEX 字符串传入交易构建层，下游无需修改。" },
+    desc:"进入 HEX 模式后（含手动切换）立即触发校验。非法字符或奇数长度立即红框 + 错误说明，Save 同步禁用。" },
+  { icon:"💡", title:"疑似 HEX 的明文引导", bg:"#FAFAF9", border:"#E7E5E4", iconBg:"#F5F5F4",
+    desc:"以 0x 开头但不合规、或纯十六进制字符串，默认识别为明文并提示「切换为 HEX」；手动切换后若无前缀，系统说明将自动补全 0x 前缀写入链上。" },
+  { icon:"⛽", title:"Gas 费用提示",      bg:"#FFFBEB", border:"#FDE68A", iconBg:"#FEF3C7",
+    desc:"Data 超过 1024 字节时展示 Gas 费用提示，不强制截断，由用户自行决定。" },
+  { icon:"🔗", title:"接口无变更",        bg:"#F8FAFC", border:"#E2E8F0", iconBg:"#F1F5F9",
+    desc:"无论输入格式或切换状态，最终均以 0x HEX 字符串传入交易构建层，下游无需修改。" },
 ];
 var legendGrid = document.getElementById("legend-grid");
 legendItems.forEach(function(item){
