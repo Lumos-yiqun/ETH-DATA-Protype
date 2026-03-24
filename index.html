@@ -22,11 +22,6 @@ textarea:focus, button:focus { outline: none; }
   from { opacity: 0; transform: translateY(6px); }
   to   { opacity: 1; transform: translateY(0); }
 }
-@keyframes badgePop {
-  0%   { transform: scale(1); box-shadow: 0 0 0 0 rgba(37,99,235,0); }
-  40%  { transform: scale(1.22); box-shadow: 0 0 0 6px rgba(37,99,235,0.18); }
-  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(37,99,235,0); }
-}
 @keyframes toastUp {
   from { opacity: 0; transform: translateX(-50%) translateY(12px); }
   to   { opacity: 1; transform: translateX(-50%) translateY(0); }
@@ -36,7 +31,6 @@ textarea:focus, button:focus { outline: none; }
   to   { opacity: 1; max-height: 60px; }
 }
 .anim-in    { animation: fadeSlideIn 0.18s ease both; }
-.badge-pop  { animation: badgePop 0.45s ease both; }
 .toast-anim { animation: toastUp 0.22s ease both; }
 .hint-in    { animation: hintIn 0.25s ease both; overflow: hidden; }
 
@@ -198,52 +192,44 @@ textarea:focus, button:focus { outline: none; }
   display: block;
 }
 .data-textarea.plain {
-  border: 1.5px solid #E5E7EB; background: #fff; padding-right: 90px;
+  border: 1.5px solid #E5E7EB; background: #fff;
 }
 .data-textarea.hex-ok {
-  border: 1.5px solid #93C5FD; background: #F0F7FF; padding-right: 60px;
+  border: 1.5px solid #93C5FD; background: #F0F7FF;
   font-family: "SF Mono", "Fira Code", monospace;
 }
 .data-textarea.hex-err {
-  border: 1.5px solid #EF4444; background: #FEF2F2; padding-right: 60px;
+  border: 1.5px solid #EF4444; background: #FEF2F2;
   font-family: "SF Mono", "Fira Code", monospace;
 }
 
-/* ── Format Badge ─────────────────────────────────────────── */
-.format-badge {
-  position: absolute; top: 8px; right: 8px;
-  font-size: 10px; font-weight: 700; letter-spacing: .04em;
-  padding: 3px 9px; border-radius: 99px;
-  user-select: none; pointer-events: none;
-  transition: background 0.25s, color 0.25s, border-color 0.25s;
+/* ── Switch Link ──────────────────────────────────────────── */
+.switch-link {
+  font-size: 11px; color: #3B82F6;
+  background: none; border: none; padding: 0;
+  cursor: pointer; text-decoration: underline;
+  text-underline-offset: 2px; white-space: nowrap; flex-shrink: 0;
+  transition: color 0.15s;
 }
-.format-badge.plain { background: #F3F4F6; color: #9CA3AF; border: 1px solid #E5E7EB; }
-.format-badge.hex   { background: #DBEAFE; color: #1D4ED8; border: 1px solid #BFDBFE; }
+.switch-link:hover { color: #1D4ED8; }
 
 /* ── Footer Row ───────────────────────────────────────────── */
 .footer-row {
-  display: flex; justify-content: space-between; align-items: flex-start;
-  margin-top: 5px; gap: 8px; min-height: 18px;
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: 6px; gap: 8px; min-height: 22px;
+}
+.footer-row-left {
+  display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0;
 }
 .footer-hint { font-size: 11px; }
 .footer-hint.normal  { color: #C4C9D4; }
 .footer-hint.plain   { color: #9CA3AF; }
-.footer-hint.valid   { color: #16A34A; font-weight: 500; }
+.footer-hint.hint    { color: #6B7280; }
 .footer-hint.error   { color: #EF4444; font-weight: 500; }
-.byte-count { font-size: 11px; flex-shrink: 0; transition: color .2s; }
-.byte-count.normal { color: #9CA3AF; }
-.byte-count.warn   { color: #F59E0B; font-weight: 600; }
-
 /* ── Alert Boxes ──────────────────────────────────────────── */
 .alert-box {
   margin-top: 8px; border-radius: 10px;
   padding: 9px 12px; display: flex; gap: 8px; align-items: flex-start;
-}
-.alert-box.hex-hint {
-  background: #EFF6FF; border: 1px solid #BFDBFE;
-}
-.alert-box.ambiguous {
-  background: #F9FAFB; border: 1px solid #E5E7EB;
 }
 .alert-box.gas {
   background: #FFFBEB; border: 1px solid #FDE68A;
@@ -290,10 +276,31 @@ textarea:focus, button:focus { outline: none; }
 /* ── Divider ──────────────────────────────────────────────── */
 .divider { height: 1px; background: #F3F4F6; margin: 18px 0 14px; }
 
-/* ── Preset Buttons ───────────────────────────────────────── */
+/* ── After phone：横向布局（手机 + 右侧面板）──────────────── */
+.after-wrap {
+  flex-direction: row !important;
+  align-items: flex-start !important;
+  gap: 20px !important;
+}
+.phone-col {
+  display: flex; flex-direction: column; align-items: center;
+  flex-shrink: 0;
+}
+
+/* ── Preset Panel（屏幕右侧） ─────────────────────────────── */
+.presets-panel {
+  margin-top: 68px; /* 与手机内容区顶部对齐 */
+  width: 192px;
+  background: #fff;
+  border: 1px solid #E2E8F0;
+  border-radius: 16px;
+  padding: 14px 14px 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.05);
+  flex-shrink: 0;
+}
 .presets-label {
   font-size: 10px; font-weight: 700; color: #9CA3AF;
-  margin-bottom: 8px; text-transform: uppercase; letter-spacing: .06em;
+  margin-bottom: 10px; text-transform: uppercase; letter-spacing: .06em;
 }
 .presets-wrap { display: flex; flex-wrap: wrap; gap: 6px; }
 .preset-btn {
@@ -453,7 +460,8 @@ textarea:focus, button:focus { outline: none; }
   </div>
 
   <!-- Phone: After -->
-  <div class="phone-wrap">
+  <div class="phone-wrap after-wrap">
+  <div class="phone-col">
     <div class="phone-shell">
       <div class="phone-notch"></div>
       <div class="phone-content">
@@ -504,24 +512,19 @@ textarea:focus, button:focus { outline: none; }
             </button>
           </div>
 
-          <!-- Textarea + badge -->
+          <!-- Textarea -->
           <div class="textarea-wrap">
             <textarea class="data-textarea plain" id="after-input" rows="5"
               placeholder="输入文字或粘贴 0x... HEX 数据"
               oninput="onAfterInput(this.value)"></textarea>
-            <span class="format-badge plain" id="format-badge">Plain Text</span>
           </div>
 
-          <!-- Format switch hint -->
-          <div id="fmt-hint" style="display:none" class="alert-box hex-hint hint-in">
-            <span class="alert-icon">🔍</span>
-            <p class="alert-text blue">检测到 0x 前缀，已自动识别为 HEX 格式</p>
-          </div>
-
-          <!-- Error / hint + byte count -->
+          <!-- 状态提示 + 文字切换链接 + 字节数 -->
           <div class="footer-row">
-            <span class="footer-hint normal" id="footer-hint">以 0x 开头 → HEX 校验 · 其余 → 明文自动编码</span>
-            <span class="byte-count normal" id="byte-count" style="display:none"></span>
+            <div class="footer-row-left">
+              <span class="footer-hint normal" id="footer-hint">以 0x 开头 → HEX 校验 · 其余 → 明文自动编码</span>
+              <button class="switch-link" id="switch-link" style="display:none"></button>
+            </div>
           </div>
 
           <!-- Gas warning -->
@@ -530,30 +533,6 @@ textarea:focus, button:focus { outline: none; }
             <p class="alert-text orange">Data 较大，将显著增加 Gas 费用</p>
           </div>
 
-          <!-- Ambiguous input hint -->
-          <div id="ambig-hint" style="display:none" class="alert-box ambiguous anim-in">
-            <span class="alert-icon">💡</span>
-            <p class="alert-text gray">
-              内容看起来像 HEX，但将以明文处理。<br/>
-              如需作为 HEX 数据，请在开头添加 <code>0x</code> 前缀。
-            </p>
-          </div>
-
-          <!-- Send Mode Bar：格式说明提示条（HEX 校验通过时出现） -->
-          <div id="send-mode-bar" style="display:none" class="send-mode-bar hex-state anim-in">
-            <div class="send-mode-left">
-              <span class="send-mode-icon">ℹ️</span>
-              <span class="send-mode-desc" id="send-mode-desc"></span>
-            </div>
-            <button class="send-mode-btn" id="send-mode-btn"></button>
-          </div>
-
-          <!-- Divider -->
-          <div class="divider"></div>
-
-          <!-- Quick presets -->
-          <p class="presets-label">快速测试示例</p>
-          <div class="presets-wrap" id="presets-wrap"></div>
         </div>
 
         <!-- Toast -->
@@ -562,7 +541,14 @@ textarea:focus, button:focus { outline: none; }
     </div>
     <p class="phone-label">改版后（自动识别）</p>
     <p style="text-align:center;margin-top:5px"><span class="phone-badge blue">New · v1.3 · 双向切换提示条</span></p>
+  </div><!-- end phone-col -->
+
+  <!-- Quick presets panel（右侧） -->
+  <div class="presets-panel">
+    <p class="presets-label">快速测试示例</p>
+    <div class="presets-wrap" id="presets-wrap"></div>
   </div>
+  </div><!-- end after-wrap -->
 
 </div><!-- end phones-wrap -->
 
@@ -592,167 +578,150 @@ function textToHex(str) {
   var bytes = new TextEncoder().encode(str);
   return "0x" + Array.from(bytes).map(function(b){ return b.toString(16).padStart(2,"0"); }).join("");
 }
+function getByteCount(text) {
+  return new TextEncoder().encode(text).length;
+}
+
+// 完全符合 HEX 规范：必须有 0x 前缀 + 全合法字符 + 偶数长度
+function isFullyValidHex(val) {
+  if (!val || !/^0[xX]/.test(val)) return false; // 无 0x 前缀直接排除
+  var stripped = val.replace(/^0[xX]/, "");
+  return stripped.length > 0
+    && /^[0-9a-fA-F]+$/.test(stripped)
+    && stripped.length % 2 === 0;
+}
+
+// 疑似 HEX：以 0x 开头但不满足完整规范
+function couldBeHex(val) {
+  return /^0[xX]/.test(val) && val.length > 2;
+}
+
+// 验证 HEX 并返回错误原因（用于强制 HEX 模式时显示报错）
+// 支持有 0x 前缀和无前缀（纯十六进制字符）两种情况
 function validateHex(raw) {
-  if (!raw || /^0[xX]$/.test(raw)) return { ok:true, bytes:0, empty:true, msg:"" };
-  var stripped = raw.replace(/^0[xX]/,"");
+  if (!raw) return { ok:true, bytes:0, empty:true, msg:"" };
+  var stripped;
+  if (/^0[xX]/.test(raw)) {
+    stripped = raw.replace(/^0[xX]/, "");
+    if (!stripped) return { ok:true, bytes:0, empty:true, msg:"" };
+  } else {
+    stripped = raw; // 无前缀，直接当裸 HEX 处理
+  }
   if (!/^[0-9a-fA-F]*$/.test(stripped))
     return { ok:false, bytes:0, empty:false, msg:"包含无效字符，仅支持 0-9 和 a-f" };
   if (stripped.length % 2 !== 0)
     return { ok:false, bytes:0, empty:false, msg:"HEX 字符数应为偶数" };
   return { ok:true, bytes: stripped.length/2, empty:false, msg:"" };
 }
-function getByteCount(text) {
-  return new TextEncoder().encode(text).length;
-}
-function isHexFormat(val) { return /^0[xX]/.test(val); }
-function isAmbiguous(val) { return !isHexFormat(val) && val.length>=4 && /^[0-9a-fA-F]+$/.test(val); }
+
 
 /* ── State ────────────────────────────────────────────────── */
-var prevIsHex    = false;
-var fmtHintTimer = null;
+var prevAutoHex  = false;
 var toastTimer   = null;
-// sendMode: 'auto' = 跟随自动识别 | 'plaintext' = 用户主动切换为明文
-var sendMode = 'auto';
+// userOverride: null（跟随自动识别）| 'hex'（强制 HEX）| 'plaintext'（强制明文）
+var userOverride = null;
 
 /* ── DOM refs ─────────────────────────────────────────────── */
-var afterInput    = document.getElementById("after-input");
-var formatBadge   = document.getElementById("format-badge");
-var fmtHint       = document.getElementById("fmt-hint");
-var footerHint    = document.getElementById("footer-hint");
-var byteCountEl   = document.getElementById("byte-count");
-var gasWarnEl     = document.getElementById("gas-warn");
-var ambigHintEl   = document.getElementById("ambig-hint");
-var sendModeBar   = document.getElementById("send-mode-bar");
-var sendModeDesc  = document.getElementById("send-mode-desc");
-var sendModeBtn   = document.getElementById("send-mode-btn");
-var saveAfterBtn  = document.getElementById("save-after");
-var afterToast    = document.getElementById("after-toast");
+var afterInput  = document.getElementById("after-input");
+var footerHint  = document.getElementById("footer-hint");
+var switchLink  = document.getElementById("switch-link");
+var gasWarnEl   = document.getElementById("gas-warn");
+var saveAfterBtn= document.getElementById("save-after");
+var afterToast  = document.getElementById("after-toast");
+
+/* ── Switch link click handler ────────────────────────────── */
+switchLink.addEventListener("click", function() {
+  var val = afterInput.value;
+  if (!val) return;
+  var autoHex = isFullyValidHex(val);
+  var effectiveMode = userOverride !== null ? userOverride : (autoHex ? "hex" : "plaintext");
+  userOverride = (effectiveMode === "hex") ? "plaintext" : "hex";
+  onAfterInput(val, true);
+});
 
 /* ── Main update function ─────────────────────────────────── */
-function onAfterInput(val, keepSendMode) {
-  // Reset sendMode whenever user changes content (unless called from toggle btn)
-  if (!keepSendMode) sendMode = 'auto';
+function onAfterInput(val, keepOverride) {
+  if (!keepOverride) userOverride = null;
 
-  var autoIsHex = isHexFormat(val);
-  var hexVal    = autoIsHex ? validateHex(val) : null;
-  var hasErr    = autoIsHex && hexVal && !hexVal.ok && !hexVal.empty;
-  var hexValid  = autoIsHex && hexVal && hexVal.ok && !hexVal.empty; // HEX OK + non-empty
+  var autoHex      = isFullyValidHex(val);
+  var detectedMode = autoHex ? "hex" : "plaintext";
+  var effectiveMode = userOverride !== null ? userOverride : detectedMode;
+  var isHexMode    = effectiveMode === "hex";
 
-  // Effective mode (what we actually use for encoding)
-  var effectivePlain = (!autoIsHex) || (autoIsHex && sendMode === 'plaintext');
+  // HEX 验证（仅 HEX 模式下用于报错）
+  var hexVal   = validateHex(val);
+  var hasError = isHexMode && val && !hexVal.ok && !hexVal.empty;
 
-  // Byte counts
-  var hexBytes   = hexValid ? hexVal.bytes : 0;
+  // 字节数
+  var hexBytes   = (hexVal.ok && !hexVal.empty) ? hexVal.bytes : 0;
   var plainBytes = val ? getByteCount(val) : 0;
-  var bytes      = !val ? 0
-    : effectivePlain ? plainBytes
-    : (hexValid ? hexBytes : 0);
-  var gasWarn = bytes > 1024;
+  var bytes      = !val ? 0 : isHexMode ? hexBytes : plainBytes;
+  var gasWarn    = bytes > 1024;
 
-  /* -- Format badge (animate on auto-detection change only) -- */
-  if (autoIsHex !== prevIsHex) {
-    var newBadge = formatBadge.cloneNode(true);
-    formatBadge.parentNode.replaceChild(newBadge, formatBadge);
-    formatBadge = newBadge;
-    formatBadge.classList.add("badge-pop");
-    if (autoIsHex) {
-      fmtHint.style.display = "flex";
-      fmtHint.classList.remove("hint-in");
-      void fmtHint.offsetWidth;
-      fmtHint.classList.add("hint-in");
-      clearTimeout(fmtHintTimer);
-      fmtHintTimer = setTimeout(function(){ fmtHint.style.display = "none"; }, 2000);
-    } else {
-      fmtHint.style.display = "none";
-    }
-    prevIsHex = autoIsHex;
-  }
+  prevAutoHex = autoHex;
 
-  /* -- Badge (reflects effective mode) -- */
-  var showPlainBadge = effectivePlain || !autoIsHex;
-  formatBadge.textContent = showPlainBadge ? "Plain Text" : "HEX";
-  formatBadge.className   = "format-badge " + (showPlainBadge ? "plain" : "hex");
-
-  /* -- Textarea style -- */
+  /* -- 输入框样式 -- */
   afterInput.className = "data-textarea "
-    + (!autoIsHex || sendMode === 'plaintext' ? "plain"
-       : hasErr ? "hex-err" : "hex-ok");
+    + (!isHexMode ? "plain" : hasError ? "hex-err" : "hex-ok");
 
-  /* -- Footer hint -- */
-  footerHint.className = "footer-hint";
+  /* -- 状态提示 + 文字切换链接 -- */
+  var canSwitchToHex = couldBeHex(val) || (val.length >= 4 && /^[0-9a-fA-F]+$/.test(val));
+  var hintText = "", hintClass = "normal", linkText = "";
+
   if (!val) {
-    footerHint.textContent = "以 0x 开头 → HEX 校验 · 其余 → 明文自动编码";
-    footerHint.classList.add("normal");
-  } else if (hasErr) {
-    footerHint.textContent = "✕ " + hexVal.msg;
-    footerHint.classList.add("error");
-  } else if (sendMode === 'plaintext') {
-    footerHint.textContent = "Override：将以 UTF-8 明文写入链上";
-    footerHint.classList.add("plain");
-  } else if (hexValid) {
-    footerHint.textContent = "✓ 格式合法";
-    footerHint.classList.add("valid");
-  } else {
-    footerHint.textContent = "将以 UTF-8 编码后附加至交易";
-    footerHint.classList.add("plain");
-  }
-
-  /* -- Byte count -- */
-  if (val && !hasErr && bytes > 0) {
-    byteCountEl.style.display = "block";
-    byteCountEl.textContent   = bytes.toLocaleString() + " bytes";
-    byteCountEl.className     = "byte-count " + (gasWarn ? "warn" : "normal");
-  } else {
-    byteCountEl.style.display = "none";
-  }
-
-  /* -- Gas warning -- */
-  gasWarnEl.style.display = (gasWarn && !hasErr) ? "flex" : "none";
-
-  /* -- Ambiguous hint -- */
-  ambigHintEl.style.display = isAmbiguous(val) ? "flex" : "none";
-
-  /* -- Send Mode Bar（格式说明提示条） -- */
-  if (hexValid) {
-    sendModeBar.style.display = "flex";
-    if (sendMode === 'plaintext') {
-      // 状态 B：Override 明文
-      sendModeBar.className = "send-mode-bar plain-state anim-in";
-      sendModeDesc.textContent = "将以 UTF-8 明文写入链上（" + plainBytes + " bytes）";
-      sendModeBtn.textContent  = "切换为 HEX 发送（" + hexBytes + " bytes）→";
+    hintText  = "完整 HEX 自动识别 · 其余内容识别为明文";
+    hintClass = "normal";
+  } else if (hasError) {
+    hintText  = "✕ " + hexVal.msg;
+    hintClass = "error";
+    linkText  = "切换为纯文本";
+  } else if (isHexMode) {
+    if (!/^0[xX]/.test(val)) {
+      hintText = "已切换为 HEX 模式，将自动补全 0x 前缀写入链上";
+    } else if (userOverride === "hex") {
+      hintText = "已手动切换为 HEX 模式";
     } else {
-      // 状态 A：默认 HEX
-      sendModeBar.className = "send-mode-bar hex-state anim-in";
-      sendModeDesc.textContent = "将以 HEX 字节写入链上（" + hexBytes + " bytes）";
-      sendModeBtn.textContent  = "改为明文发送（" + plainBytes + " bytes）→";
+      hintText = "系统已识别为 HEX 格式";
     }
+    hintClass = "hint";
+    linkText  = "切换为纯文本";
+  } else if (userOverride === "plaintext") {
+    hintText  = "已手动切换为明文，将以 UTF-8 编码写入链上";
+    hintClass = "plain";
+    linkText  = "切换为 HEX";
+  } else if (canSwitchToHex) {
+    hintText  = "系统已识别为明文";
+    hintClass = "plain";
+    linkText  = "切换为 HEX";
   } else {
-    sendModeBar.style.display = "none";
+    hintText  = "将以 UTF-8 编码后附加至交易";
+    hintClass = "plain";
   }
 
-  /* -- Save button -- */
-  saveAfterBtn.className = "nav-save " + (hasErr ? "disabled" : "active");
-  saveAfterBtn.disabled  = hasErr;
+  footerHint.className    = "footer-hint " + hintClass;
+  footerHint.textContent  = hintText;
+  switchLink.textContent  = linkText;
+  switchLink.style.display = linkText ? "inline" : "none";
+
+  /* -- Gas 提示 -- */
+  gasWarnEl.style.display = (gasWarn && !hasError) ? "flex" : "none";
+
+  /* -- Save 按钮 -- */
+  saveAfterBtn.className = "nav-save " + (hasError ? "disabled" : "active");
+  saveAfterBtn.disabled  = hasError;
 
   if (afterInput.value !== val) afterInput.value = val;
 }
-
-/* ── Send Mode Toggle ─────────────────────────────────────── */
-sendModeBtn.addEventListener("click", function(){
-  sendMode = (sendMode === 'plaintext') ? 'auto' : 'plaintext';
-  onAfterInput(afterInput.value, true /* keepSendMode */);
-});
 
 /* ── Save (After) ─────────────────────────────────────────── */
 saveAfterBtn.addEventListener("click", function(){
   if (saveAfterBtn.disabled) return;
   var val = afterInput.value;
   if (!val) return;
-  var isHex = isHexFormat(val);
-  // Use sendMode to determine final encoding
-  var finalHex = (sendMode === 'plaintext') ? textToHex(val)
-    : isHex ? val : textToHex(val);
-  var modeLabel = (sendMode === 'plaintext') ? "（明文编码）" : (isHex ? "（HEX）" : "（明文编码）");
+  var autoHex      = isFullyValidHex(val);
+  var effectiveMode = userOverride !== null ? userOverride : (autoHex ? "hex" : "plaintext");
+  var finalHex  = (effectiveMode === "hex") ? val : textToHex(val);
+  var modeLabel = (effectiveMode === "hex") ? "（HEX）" : "（明文编码）";
   var preview   = finalHex.length > 22 ? finalHex.slice(0,22)+"…" : finalHex;
   showToast("已提交" + modeLabel + "：" + preview);
   saveAfterBtn.textContent = "✓ Saved";
@@ -788,6 +757,7 @@ var presets = [
   { label:"含无效字符",     val:"0x48GG" },
   { label:"奇数长度",       val:"0x48656" },
   { label:"纯十六进制字符", val:"deadbeef" },
+  { label:"不响应合约调用", val:"0xa9059cbb000000000000000000000000d3cda913deb6f78967cb11bce4a79ea2e7d99e390000000000000000000000000000000000000000000000000de0b6b3a7640000" },
 ];
 var presetsWrap = document.getElementById("presets-wrap");
 presets.forEach(function(p){
@@ -808,17 +778,15 @@ presets.forEach(function(p){
 /* ── Legend ───────────────────────────────────────────────── */
 var legendItems = [
   { icon:"🔍", title:"自动格式识别",    bg:"#EFF6FF", border:"#BFDBFE", iconBg:"#DBEAFE",
-    desc:"0x 前缀触发 HEX 模式，其余均为明文。无需用户做任何模式选择。" },
-  { icon:"🏷️", title:"格式标签实时反馈", bg:"#F0FDF4", border:"#BBF7D0", iconBg:"#DCFCE7",
-    desc:"输入框右上角药丸标签实时显示识别结果，格式切换时有动画弹出。" },
+    desc:"完整 HEX（0x + 合法字符 + 偶数长度）→ 自动识别 HEX；其余内容一律识别为明文。" },
+  { icon:"↩️", title:"格式文字切换链接", bg:"#F0FDF4", border:"#BBF7D0", iconBg:"#DCFCE7",
+    desc:"状态提示语旁提供「切换为纯文本 / 切换为 HEX」文字链接，低频修正操作静默退出，用户手动切换后文案同步更新。" },
   { icon:"✕",  title:"HEX 严格实时校验", bg:"#FFF7F7", border:"#FECACA", iconBg:"#FEE2E2",
-    desc:"非法字符或奇数长度立即红框提示。0x 后无字符视为空值，不触发错误。" },
+    desc:"仅在 HEX 模式下触发校验。非法字符或奇数长度立即红框提示，Save 同步禁用。" },
   { icon:"💡", title:"歧义输入引导",     bg:"#FAFAF9", border:"#E7E5E4", iconBg:"#F5F5F4",
-    desc:"纯十六进制字符不带 0x 时，以明文处理，并给出「添加 0x」的建议提示。" },
+    desc:"纯十六进制字符不带 0x 时，默认识别为明文并提示「切换为 HEX」；切换后底部说明系统将自动补全 0x 前缀。" },
   { icon:"⛽", title:"Gas 费用提示",     bg:"#FFFBEB", border:"#FDE68A", iconBg:"#FEF3C7",
     desc:"超过 1024 字节时字节计数变橙色并展示 Gas 警告，不强制截断。" },
-  { icon:"🔄", title:"二次编码提示条",    bg:"#F0FDF4", border:"#BBF7D0", iconBg:"#DCFCE7",
-    desc:"HEX 校验通过时出现：默认「HEX 字节写入」，可切换为「UTF-8 明文」；状态可来回切换，修改内容后自动重置。" },
   { icon:"🔗", title:"接口无变更",       bg:"#F8FAFC", border:"#E2E8F0", iconBg:"#F1F5F9",
     desc:"无论输入格式，最终均以 0x HEX 字符串传入交易构建层，下游无需修改。" },
 ];
